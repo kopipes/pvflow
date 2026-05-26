@@ -334,7 +334,11 @@
     color: var(--text-primary);
   }
   
+  .action-btn {
+    justify-content: center;
+  }
+  
   .action-btn span {
-    display: none;
+    display: inline;
   }
 }
