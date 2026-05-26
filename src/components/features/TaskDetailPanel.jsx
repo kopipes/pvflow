@@ -22,6 +22,7 @@ import {
   ThumbsDown,
   Bell,
   ChevronDown,
+  ChevronUp,
   Pencil,
   ExternalLink,
   Plus,
@@ -43,6 +44,7 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
     setSelectedTask,
     updateTaskStatus,
     addComment,
+    addReply,
     deleteComment,
     approveStatusChange,
     rejectStatusChange,
@@ -66,6 +68,8 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
   const [previewFile, setPreviewFile] = useState(null);
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [newChecklistAssignee, setNewChecklistAssignee] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState('');
   
   const checklistItems = taskChecklists?.[taskId] || [];
   const completedCount = checklistItems.filter(item => item.completed).length;
@@ -172,6 +176,14 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
   const handleReject = () => {
     if (confirm('Reject this status change request?')) {
       rejectStatusChange(taskId);
+    }
+  };
+  
+  const handleAddReply = (commentId) => {
+    if (replyText.trim()) {
+      addReply(taskId, commentId, replyText);
+      setReplyText('');
+      setReplyingTo(null);
     }
   };
   
@@ -492,6 +504,51 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
                             </div>
                           );
                         })}
+                        
+                        {/* Reply Section */}
+                        {replyingTo === comment.id ? (
+                          <div className="reply-input-container">
+                            <input
+                              type="text"
+                              placeholder="Write a reply..."
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && replyText.trim()) {
+                                  handleAddReply(comment.id);
+                                }
+                              }}
+                              className="reply-input"
+                              autoFocus
+                            />
+                            <button 
+                              className="reply-send-btn"
+                              onClick={() => handleAddReply(comment.id)}
+                              disabled={!replyText.trim()}
+                            >
+                              <Send size={14} />
+                            </button>
+                            <button 
+                              className="reply-cancel-btn"
+                              onClick={() => {
+                                setReplyingTo(null);
+                                setReplyText('');
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            className="reply-btn"
+                            onClick={() => {
+                              setReplyingTo(comment.id);
+                              setReplyText('');
+                            }}
+                          >
+                            Reply
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

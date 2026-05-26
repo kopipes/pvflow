@@ -404,6 +404,32 @@ export const useTaskStore = create((set, get) => ({
     get()._persistState();
   },
   
+  addReply: (taskId, commentId, content) => {
+    const { currentUser } = get();
+    const newReply = {
+      id: `reply-${Date.now()}`,
+      user_id: currentUser.id,
+      content,
+      created_at: new Date().toISOString(),
+    };
+    
+    set(state => {
+      const taskComments = state.comments[taskId] || [];
+      return {
+        comments: {
+          ...state.comments,
+          [taskId]: taskComments.map(c => 
+            c.id === commentId 
+              ? { ...c, replies: [...(c.replies || []), newReply] }
+              : c
+          )
+        }
+      };
+    });
+    
+    get().addLog(taskId, 'comment', 'Added a reply');
+  },
+  
   // File management
   addFile: (taskId, fileData) => {
     const { currentUser } = get();
