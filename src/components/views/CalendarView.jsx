@@ -48,22 +48,22 @@ function CalendarView() {
     <div className="calendar-view">
       <div className="calendar-header">
         <div className="calendar-title">
-          <CalendarIcon size={24} />
+          <Calendar size={24} />
           <h2>Calendar</h2>
         </div>
         <div className="calendar-nav">
-          <button className="nav-btn" onClick={prevMonth}>
-            <ChevronLeft size={20} />
+          <button className="nav-btn" onClick={goToPrevMonth}>
+            <ChevronLeft size={18} />
           </button>
           <span className="current-month">{format(currentDate, 'MMMM yyyy')}</span>
-          <button className="nav-btn" onClick={nextMonth}>
-            <ChevronRight size={20} />
+          <button className="nav-btn" onClick={goToNextMonth}>
+            <ChevronRight size={18} />
           </button>
-          <button className="today-btn" onClick={goToday}>Today</button>
+          <button className="today-btn" onClick={goToToday}>Today</button>
         </div>
       </div>
       
-      <div className="calendar-grid">
+      <div className="calendar-card">
         <div className="weekday-header">
           {weekDays.map(day => (
             <div key={day} className="weekday">{day}</div>
@@ -121,5 +121,4 @@ function CalendarView() {
     </div>
   );
 }
-
 export default CalendarView;
