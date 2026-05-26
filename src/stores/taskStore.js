@@ -391,6 +391,19 @@ export const useTaskStore = create((set, get) => ({
     get().addLog(taskId, 'comment', 'Added a comment');
   },
   
+  deleteComment: (taskId, commentId) => {
+    set(state => {
+      const taskComments = state.comments[taskId] || [];
+      return {
+        comments: {
+          ...state.comments,
+          [taskId]: taskComments.filter(c => c.id !== commentId)
+        }
+      };
+    });
+    get()._persistState();
+  },
+  
   // File management
   addFile: (taskId, fileData) => {
     const { currentUser } = get();

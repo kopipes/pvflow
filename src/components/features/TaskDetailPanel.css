@@ -353,6 +353,27 @@
   color: var(--text-muted);
 }
 
+.comment-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.comment-header:hover .comment-delete-btn {
+  opacity: 1;
+}
+
+.comment-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-red);
+}
+
 .comment-text {
   font-size: 13px;
   color: var(--text-secondary);

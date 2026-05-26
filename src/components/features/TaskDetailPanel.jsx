@@ -43,6 +43,7 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
     setSelectedTask,
     updateTaskStatus,
     addComment,
+    deleteComment,
     approveStatusChange,
     rejectStatusChange,
     getPendingApproval,
@@ -55,6 +56,9 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
     toggleChecklistItem,
     deleteChecklistItem,
   } = useTaskStore();
+  
+  // Check if current user is admin
+  const isAdmin = currentUser.role === 'admin';
   
   const [newComment, setNewComment] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -456,6 +460,19 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
                           <span className="comment-time">
                             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                           </span>
+                          {isAdmin && (
+                            <button 
+                              className="comment-delete-btn"
+                              onClick={() => {
+                                if (confirm('Delete this comment?')) {
+                                  deleteComment(taskId, comment.id);
+                                }
+                              }}
+                              title="Delete comment"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                         <p className="comment-text">{comment.content}</p>
                         {comment.replies?.map(reply => {
