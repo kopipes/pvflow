@@ -28,6 +28,10 @@ function Dashboard() {
     currentUser 
   } = useTaskStore();
   
+  // Check if user has admin/corporate privileges
+  const isAdmin = () => currentUser.role === 'admin';
+  const isCorporate = () => currentUser.role === 'corporate';
+  
   const now = new Date();
   
   // Calculate metrics
@@ -235,50 +239,88 @@ function Dashboard() {
           </div>
         </div>
         
-        <div className="dashboard-section full-width">
-          <div className="section-header">
-            <h2>Team Workload</h2>
-          </div>
-          <div className="team-workload">
-            {teamWorkload.map(user => (
-              <div key={user.id} className="workload-item">
-                <div className="workload-user">
-                  <div 
-                    className="user-avatar-sm"
-                    style={{ background: user.color }}
-                  >
-                    {user.initials}
-                  </div>
-                  <div className="user-info">
-                    <div className="user-name">{user.name}</div>
-                    <div className="user-role">{user.role}</div>
-                  </div>
-                </div>
-                <div className="workload-stats">
-                  <div className="workload-stat">
-                    <span className="stat-value">{user.taskCount}</span>
-                    <span className="stat-label">Active</span>
-                  </div>
-                  {user.overdueCount > 0 && (
-                    <div className="workload-stat overdue">
-                      <span className="stat-value">{user.overdueCount}</span>
-                      <span className="stat-label">Overdue</span>
+        {(isAdmin() || isCorporate()) && (
+          <div className="dashboard-section full-width">
+            <div className="section-header">
+              <h2>Team Workload</h2>
+            </div>
+            <div className="team-workload">
+              {teamWorkload.map(user => {
+                const userTasks = tasks.filter(t => t.assignee_id === user.id && !['delivered', 'approved'].includes(t.status));
+                const userOverdueTasks = tasks.filter(t => 
+                  t.assignee_id === user.id && 
+                  t.due_date && 
+                  isBefore(new Date(t.due_date), now) && 
+                  !['delivered', 'approved'].includes(t.status)
+                );
+                
+                return (
+                  <div key={user.id} className="workload-item">
+                    <div className="workload-user">
+                      <div 
+                        className="user-avatar-sm"
+                        style={{ background: user.color }}
+                      >
+                        {user.initials}
+                      </div>
+                      <div className="workload-user-info">
+                        <div className="user-name">{user.name}</div>
+                        <div className="user-role">{user.role}</div>
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="workload-bar">
-                  <div 
-                    className="workload-fill"
-                    style={{ 
-                      width: `${Math.min(user.taskCount / 10 * 100, 100)}%`,
-                      background: user.overdueCount > 0 ? 'var(--accent-red)' : user.color
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+                    <div className="workload-stats">
+                      <div className="workload-stat">
+                        <span className="stat-value">{userTasks.length}</span>
+                        <span className="stat-label">Active</span>
+                      </div>
+                      {userOverdueTasks.length > 0 && (
+                        <div className="workload-stat overdue">
+                          <span className="stat-value">{userOverdueTasks.length}</span>
+                          <span className="stat-label">Overdue</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {userTasks.length > 0 && (
+                      <div className="workload-tasks">
+                        {userTasks.slice(0, 3).map(task => {
+                          const project = projects.find(p => p.id === task.project_id);
+                          const status = statuses.find(s => s.id === task.status);
+                          
+                          return (
+                            <div key={task.id} className="workload-task-item" style={{ borderLeftColor: project?.color || '#ccc' }}>
+                              <div className="task-item-header">
+                                <span className="task-item-title">{task.title}</span>
+                                {task.due_date && isBefore(new Date(task.due_date), now) && (
+                                  <span className="task-item-overdue">Overdue</span>
+                                )}
+                              </div>
+                              <div className="task-item-meta">
+                                {project && (
+                                  <span className="task-item-project">
+                                    {project.name}
+                                  </span>
+                                )}
+                                <span className="task-item-status" style={{ color: status?.color }}>
+                                  {status?.label}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {userTasks.length > 3 && (
+                          <div className="workload-task-more">
+                            +{userTasks.length - 3} more tasks
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
