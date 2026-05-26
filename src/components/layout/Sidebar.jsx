@@ -15,6 +15,7 @@ import {
   Database,
   ChevronDown,
   Briefcase,
+  LayoutGrid,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -26,6 +27,7 @@ const navItems = [
   { id: 'files', label: 'Files', icon: FolderOpen },
   { id: 'team', label: 'Team', icon: Users },
   { id: 'projects', label: 'Projects', icon: Briefcase },
+  { id: 'all-tasks', label: 'All Tasks', icon: LayoutGrid },
 ];
 
 const adminItems = [
@@ -113,37 +115,31 @@ function Sidebar({ onNewTask, onNewProject, onAIFeedback, isOpen, onClose }) {
         ))}
         
         {/* Admin Only Items */}
-        {(isAdmin() || isCorporate()) && (
+        {isAdmin() && (
           <>
             <div className="nav-divider" />
             <div className="nav-section-title">Administration</div>
-            {canManageUsers() && (
-              <button
-                className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
-                onClick={() => handleNavClick('users')}
-              >
-                <Shield size={18} />
-                <span>User Management</span>
-              </button>
-            )}
-            {canManageDivisions() && (
-              <button
-                className={`nav-item ${currentView === 'divisions' ? 'active' : ''}`}
-                onClick={() => handleNavClick('divisions')}
-              >
-                <Database size={18} />
-                <span>Division Master</span>
-              </button>
-            )}
-            {canAccessAdminSettings() && (
-              <button
-                className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
-                onClick={() => handleNavClick('settings')}
-              >
-                <Settings size={18} />
-                <span>Admin Settings</span>
-              </button>
-            )}
+            <button
+              className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
+              onClick={() => handleNavClick('users')}
+            >
+              <Shield size={18} />
+              <span>User Management</span>
+            </button>
+            <button
+              className={`nav-item ${currentView === 'divisions' ? 'active' : ''}`}
+              onClick={() => handleNavClick('divisions')}
+            >
+              <Database size={18} />
+              <span>Division Master</span>
+            </button>
+            <button
+              className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
+              onClick={() => handleNavClick('settings')}
+            >
+              <Settings size={18} />
+              <span>Admin Settings</span>
+            </button>
           </>
         )}
       </nav>

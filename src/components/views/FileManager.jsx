@@ -14,6 +14,7 @@ import {
   Image,
   Film,
   Archive,
+  X,
 } from 'lucide-react';
 import './FileManager.css';
 
@@ -22,6 +23,48 @@ function FileManager() {
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [previewFile, setPreviewFile] = useState(null);
+  
+  // Check if file type can be previewed in browser
+  const canPreviewInBrowser = (type) => {
+    return ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp'].includes(type);
+  };
+  
+  // Handle file preview
+  const handlePreview = (file, e) => {
+    e.stopPropagation();
+    if (canPreviewInBrowser(file.type)) {
+      setPreviewFile(file);
+    } else {
+      alert(`Preview not available for ${file.type.toUpperCase()} files. Only PDF, JPG, PNG, GIF, and WEBP can be previewed.`);
+    }
+  };
+  
+  // Handle file download
+  const handleDownload = (file, e) => {
+    e.stopPropagation();
+    const link = document.createElement('a');
+    link.href = file.url || '#';
+    link.download = file.filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    
+    if (file.url && file.url.startsWith('blob:')) {
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // For mock data without real files, create a placeholder download
+      const placeholderContent = `File: ${file.filename}\nVersion: ${file.version}\nSize: ${file.size} bytes\nType: ${file.type}\n\nThis is a placeholder download since no actual file was uploaded.`;
+      const blob = new Blob([placeholderContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
   
   // Flatten all files across tasks
   const allFiles = Object.entries(taskFiles).flatMap(([taskId, files]) =>
@@ -171,10 +214,18 @@ function FileManager() {
                     </div>
                   </div>
                   <div className="file-actions">
-                    <button className="file-action" title="Preview">
+                    <button 
+                      className="file-action" 
+                      title="Preview"
+                      onClick={(e) => handlePreview(file, e)}
+                    >
                       <Eye size={14} />
                     </button>
-                    <button className="file-action" title="Download">
+                    <button 
+                      className="file-action" 
+                      title="Download"
+                      onClick={(e) => handleDownload(file, e)}
+                    >
                       <Download size={14} />
                     </button>
                   </div>
@@ -215,10 +266,18 @@ function FileManager() {
                     {uploader?.name} • {format(new Date(file.uploaded_at), 'MMM d')}
                   </div>
                   <div className="col-actions">
-                    <button className="file-action" title="Preview">
+                    <button 
+                      className="file-action" 
+                      title="Preview"
+                      onClick={(e) => handlePreview(file, e)}
+                    >
                       <Eye size={14} />
                     </button>
-                    <button className="file-action" title="Download">
+                    <button 
+                      className="file-action" 
+                      title="Download"
+                      onClick={(e) => handleDownload(file, e)}
+                    >
                       <Download size={14} />
                     </button>
                   </div>
@@ -228,6 +287,50 @@ function FileManager() {
           </div>
         )}
       </div>
+      
+      {/* Preview Modal */}
+      {previewFile && (
+        <div className="preview-modal-overlay" onClick={() => setPreviewFile(null)}>
+          <div className="preview-modal" onClick={e => e.stopPropagation()}>
+            <div className="preview-header">
+              <div className="preview-info">
+                <FileText size={20} />
+                <span>{previewFile.filename}</span>
+              </div>
+              <div className="preview-actions">
+                <button 
+                  className="preview-action-btn"
+                  onClick={() => handleDownload(previewFile, { stopPropagation: () => {} })}
+                  title="Download"
+                >
+                  <Download size={18} />
+                </button>
+                <button 
+                  className="preview-close-btn"
+                  onClick={() => setPreviewFile(null)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="preview-content">
+              {previewFile.type === 'pdf' ? (
+                <iframe 
+                  src={previewFile.url} 
+                  title={previewFile.filename}
+                  className="preview-iframe"
+                />
+              ) : (
+                <img 
+                  src={previewFile.url} 
+                  alt={previewFile.filename}
+                  className="preview-image"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

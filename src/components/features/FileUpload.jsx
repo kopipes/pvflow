@@ -24,6 +24,8 @@ function FileUpload({ isOpen, onClose, taskId }) {
       'jpg': 'jpg',
       'jpeg': 'jpeg',
       'png': 'png',
+      'gif': 'gif',
+      'webp': 'webp',
       'zip': 'zip',
       'rar': 'zip',
     };
@@ -50,11 +52,8 @@ function FileUpload({ isOpen, onClose, taskId }) {
   };
   
   const handleFileSelect = (file) => {
-    setSelectedFile({
-      name: file.name,
-      size: file.size,
-      type: getFileType(file.name),
-    });
+    // Store the actual file object so we can create a blob URL for preview
+    setSelectedFile(file);
   };
   
   const handleInputChange = (e) => {
@@ -63,38 +62,60 @@ function FileUpload({ isOpen, onClose, taskId }) {
     }
   };
   
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) return;
+    
+    // Check file size - warn if over 5MB (base64 has ~33% overhead)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (selectedFile.size > maxSize) {
+      alert('File is too large. Maximum size is 5MB for preview support. Consider using a smaller file or a file hosting service.');
+      return;
+    }
     
     setUploading(true);
     setUploadProgress(0);
     
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          
-          // Add file to store
-          addFile(taskId, {
-            filename: selectedFile.name,
-            type: selectedFile.type,
-            size: selectedFile.size,
-            version: version,
-            notes: notes,
-            url: URL.createObjectURL(new Blob()),
-          });
-          
-          setUploading(false);
-          setSelectedFile(null);
-          setNotes('');
-          setVersion(1);
-          onClose();
-          return 0;
-        }
-        return prev + 10;
+    // Convert file to base64 data URL for persistent storage
+    const readFileAsDataURL = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
-    }, 100);
+    };
+    
+    try {
+      // Read file progress
+      setUploadProgress(25);
+      const dataUrl = await readFileAsDataURL(selectedFile);
+      setUploadProgress(75);
+      
+      // Create file object
+      const fileObj = {
+        filename: selectedFile.name,
+        type: getFileType(selectedFile.name),
+        size: selectedFile.size,
+        version: version,
+        notes: notes,
+        url: dataUrl, // Use base64 data URL instead of blob URL
+      };
+      
+      setUploadProgress(100);
+      
+      // Add file to store
+      addFile(taskId, fileObj);
+      
+      setUploading(false);
+      setSelectedFile(null);
+      setNotes('');
+      setVersion(1);
+      onClose();
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file. Please try again.');
+      setUploading(false);
+    }
   };
   
   return (
@@ -121,7 +142,7 @@ function FileUpload({ isOpen, onClose, taskId }) {
               ref={fileInputRef}
               onChange={handleInputChange}
               style={{ display: 'none' }}
-              accept=".psd,.ai,.pdf,.jpg,.jpeg,.png,.zip,.rar"
+              accept=".psd,.ai,.pdf,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar"
             />
             
             {selectedFile ? (
@@ -145,7 +166,7 @@ function FileUpload({ isOpen, onClose, taskId }) {
               <>
                 <Upload size={40} />
                 <p>Drop file here or click to browse</p>
-                <span>Supports: PSD, AI, PDF, JPG, PNG, ZIP</span>
+                <span>Supports: PSD, AI, PDF, JPG, JPEG, PNG, GIF, WEBP, ZIP</span>
               </>
             )}
           </div>

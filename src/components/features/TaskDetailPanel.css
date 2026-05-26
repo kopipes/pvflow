@@ -423,6 +423,233 @@
   background: #3d6ce6;
 }
 
+/* Checklist Tab */
+.checklist-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checklist-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.checklist-add-form {
+  display: flex;
+  gap: 8px;
+}
+
+.checklist-task-input {
+  flex: 2;
+  padding: 8px 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.checklist-assignee-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.checklist-task-input:focus,
+.checklist-assignee-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.checklist-task-input::placeholder,
+.checklist-assignee-input::placeholder {
+  color: var(--text-muted);
+}
+
+.checklist-add {
+  display: flex;
+  gap: 8px;
+}
+
+.checklist-add input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.checklist-add input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.checklist-add input::placeholder {
+  color: var(--text-muted);
+}
+
+.checklist-add-btn {
+  padding: 8px;
+  background: var(--accent-blue);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.checklist-add-btn:hover {
+  background: #3d6ce6;
+}
+
+.checklist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.checklist-item:hover {
+  border-color: var(--border-active);
+}
+
+.checklist-item.completed {
+  opacity: 0.7;
+}
+
+.checklist-item.completed .checklist-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.checklist-checkbox {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.checklist-checkbox:hover {
+  color: var(--accent-blue);
+}
+
+.checklist-item.completed .checklist-checkbox {
+  color: var(--accent-green);
+}
+
+.checklist-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checklist-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.checklist-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.checklist-assignee {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--accent-blue);
+  font-weight: 500;
+}
+
+.checklist-assignee svg {
+  flex-shrink: 0;
+}
+
+.checklist-completed-time {
+  font-size: 11px;
+  color: var(--accent-green);
+  font-weight: 500;
+}
+
+.checklist-created-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.checklist-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.checklist-item:hover .checklist-delete {
+  opacity: 1;
+}
+
+.checklist-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-red);
+}
+
+.checklist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.checklist-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
 /* Files Tab */
 .files-tab {
   display: flex;
@@ -557,6 +784,12 @@
   background: var(--bg-card);
   border-color: var(--border-active);
   color: var(--text-primary);
+}
+
+.file-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
 }
 
 .files-empty {
@@ -958,5 +1191,127 @@
   .priority-badge {
     font-size: 11px;
     padding: 3px 8px;
+  }
+}
+
+/* Preview Modal */
+.preview-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.preview-modal {
+  background: var(--bg-card);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.preview-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.preview-info svg {
+  color: var(--accent-blue);
+}
+
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-action-btn,
+.preview-close-btn {
+  padding: 8px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-action-btn:hover,
+.preview-close-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--border-active);
+  color: var(--text-primary);
+}
+
+.preview-content {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg-deep);
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  border: none;
+  border-radius: 8px;
+  background: white;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .preview-modal {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+  
+  .preview-header {
+    padding: 12px 16px;
+  }
+  
+  .preview-info {
+    font-size: 13px;
+  }
+  
+  .preview-content {
+    padding: 12px;
   }
 }

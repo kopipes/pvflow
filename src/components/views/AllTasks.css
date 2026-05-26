@@ -1,0 +1,249 @@
+.all-tasks-view {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.all-tasks-header {
+  margin-bottom: 1.5rem;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.header-title svg {
+  color: var(--accent-blue);
+}
+
+.header-description {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.projects-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.project-group {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.project-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.project-color {
+  width: 4px;
+  height: 40px;
+  border-radius: 2px;
+}
+
+.project-info {
+  flex: 1;
+}
+
+.project-info h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.project-client {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.task-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.task-row:last-child {
+  border-bottom: none;
+}
+
+.task-row:hover {
+  background: var(--bg-elevated);
+}
+
+.task-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.task-main .task-id {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.task-main .task-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-status .status-badge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+}
+
+.task-assignee {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.task-assignee .assignee-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.task-assignee span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-assignee .unassigned {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.task-due {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 90px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.task-due .no-date {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.task-priority {
+  min-width: 70px;
+  text-align: right;
+}
+
+.task-priority span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.no-tasks {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.no-tasks p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .all-tasks-view {
+    padding: 1rem;
+  }
+  
+  .task-row {
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+  }
+  
+  .task-assignee,
+  .task-priority {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .task-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .task-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .task-status {
+    justify-self: start;
+  }
+  
+  .task-due {
+    justify-self: start;
+  }
+}

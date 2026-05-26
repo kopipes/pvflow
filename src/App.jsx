@@ -12,11 +12,13 @@ import TeamWorkload from './components/views/TeamWorkload';
 import UserManagement from './components/views/UserManagement';
 import DivisionMaster from './components/views/DivisionMaster';
 import Projects from './components/views/Projects';
+import AllTasks from './components/views/AllTasks';
 import TaskDetailPanel from './components/features/TaskDetailPanel';
 import NewTaskModal from './components/features/NewTaskModal';
 import EditTaskModal from './components/features/EditTaskModal';
 import ProjectModal from './components/features/ProjectModal';
 import AIFeedbackImport from './components/features/AIFeedbackImport';
+import FileUpload from './components/features/FileUpload';
 import { Menu } from 'lucide-react';
 import './App.css';
 
@@ -26,7 +28,15 @@ function App() {
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showAIFeedbackImport, setShowAIFeedbackImport] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [uploadTaskId, setUploadTaskId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // File upload handler
+  const handleUploadFile = (taskId) => {
+    setUploadTaskId(taskId);
+    setShowFileUpload(true);
+  };
   
   // Get selected task for edit modal
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) : null;
@@ -57,6 +67,8 @@ function App() {
         return <DivisionMaster />;
       case 'projects':
         return <Projects />;
+      case 'all-tasks':
+        return <AllTasks />;
       case 'settings':
         return <AdminSettings />;
       default:
@@ -107,6 +119,7 @@ function App() {
               isFullPage={true}
               onBack={() => setSelectedTask(null)}
               onEdit={() => setShowEditTaskModal(true)}
+              onUploadFile={handleUploadFile}
             />
           </div>
         ) : (
@@ -118,6 +131,7 @@ function App() {
               <TaskDetailPanel 
                 taskId={selectedTaskId} 
                 onEdit={() => setShowEditTaskModal(true)}
+                onUploadFile={handleUploadFile}
               />
             )}
           </div>
@@ -150,6 +164,17 @@ function App() {
         <ProjectModal 
           isOpen={showProjectModal}
           onClose={() => setShowProjectModal(false)}
+        />
+      )}
+      
+      {showFileUpload && uploadTaskId && (
+        <FileUpload 
+          isOpen={showFileUpload}
+          onClose={() => {
+            setShowFileUpload(false);
+            setUploadTaskId(null);
+          }}
+          taskId={uploadTaskId}
         />
       )}
     </div>

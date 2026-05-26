@@ -17,11 +17,16 @@ import {
   Paperclip,
   Download,
   Eye,
+  Trash2,
   ThumbsUp,
   ThumbsDown,
   Bell,
   ChevronDown,
   Pencil,
+  ExternalLink,
+  Plus,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 import './TaskDetailPanel.css';
 
@@ -34,6 +39,7 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
     taskLogs, 
     taskFiles, 
     comments,
+    taskChecklists,
     setSelectedTask,
     updateTaskStatus,
     addComment,
@@ -44,11 +50,72 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
     reassignTask,
     getAssignableUsers,
     canEditTask,
+    deleteFile,
+    addChecklistItem,
+    toggleChecklistItem,
+    deleteChecklistItem,
   } = useTaskStore();
   
   const [newComment, setNewComment] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [newChecklistItem, setNewChecklistItem] = useState('');
+  const [newChecklistAssignee, setNewChecklistAssignee] = useState('');
+  
+  const checklistItems = taskChecklists?.[taskId] || [];
+  const completedCount = checklistItems.filter(item => item.completed).length;
+  
+  // Check if file type can be previewed in browser
+  const canPreviewInBrowser = (type) => {
+    return ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp'].includes(type);
+  };
+  
+  // Handle file preview
+  const handlePreview = (file) => {
+    if (canPreviewInBrowser(file.type)) {
+      setPreviewFile(file);
+    } else {
+      alert(`Preview not available for ${file.type.toUpperCase()} files. Only PDF, JPG, PNG, GIF, and WEBP can be previewed.`);
+    }
+  };
+  
+  // Handle file download
+  const handleDownload = (file) => {
+    // For demo purposes, create a dummy download
+    const link = document.createElement('a');
+    link.href = file.url || '#';
+    link.download = file.filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    
+    // Since files are stored as blob URLs in demo, we need to trigger download differently
+    if (file.url && file.url.startsWith('blob:')) {
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // For mock data without real files, create a placeholder download
+      const placeholderContent = `File: ${file.filename}\nVersion: ${file.version}\nSize: ${file.size} bytes\nType: ${file.type}\n\nThis is a placeholder download since no actual file was uploaded.`;
+      const blob = new Blob([placeholderContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+  
+  // Handle file delete
+  const handleDeleteFile = (file) => {
+    if (confirm(`Are you sure you want to delete "${file.filename}"?`)) {
+      deleteFile(taskId, file.id);
+      if (previewFile?.id === file.id) {
+        setPreviewFile(null);
+      }
+    }
+  };
   
   const task = tasks.find(t => t.id === taskId);
   const pendingApproval = getPendingApproval(taskId);
@@ -197,6 +264,12 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
           onClick={() => setActiveTab('overview')}
         >
           Overview
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'checklist' ? 'active' : ''}`}
+          onClick={() => setActiveTab('checklist')}
+        >
+          Checklist ({completedCount}/{checklistItems.length})
         </button>
         <button 
           className={`tab-btn ${activeTab === 'files' ? 'active' : ''}`}
@@ -424,6 +497,97 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
           </div>
         )}
         
+        {activeTab === 'checklist' && (
+          <div className="checklist-tab">
+            <div className="checklist-header">
+              <h3>Checklist</h3>
+              {canEdit && (
+                <div className="checklist-add-form">
+                  <input
+                    type="text"
+                    placeholder="Task description..."
+                    value={newChecklistItem}
+                    onChange={(e) => setNewChecklistItem(e.target.value)}
+                    className="checklist-task-input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Assignee (name)"
+                    value={newChecklistAssignee}
+                    onChange={(e) => setNewChecklistAssignee(e.target.value)}
+                    className="checklist-assignee-input"
+                  />
+                  <button 
+                    className="checklist-add-btn"
+                    onClick={() => {
+                      if (newChecklistItem.trim()) {
+                        addChecklistItem(taskId, newChecklistItem, newChecklistAssignee);
+                        setNewChecklistItem('');
+                        setNewChecklistAssignee('');
+                      }
+                    }}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {checklistItems.length > 0 ? (
+              <div className="checklist-list">
+                {checklistItems.map((item) => (
+                  <div key={item.id} className={`checklist-item ${item.completed ? 'completed' : ''}`}>
+                    <button 
+                      className="checklist-checkbox"
+                      onClick={() => toggleChecklistItem(taskId, item.id)}
+                    >
+                      {item.completed ? (
+                        <CheckSquare size={20} />
+                      ) : (
+                        <Square size={20} />
+                      )}
+                    </button>
+                    <div className="checklist-content">
+                      <span className="checklist-text">{item.text}</span>
+                      <div className="checklist-meta">
+                        {item.assignee && (
+                          <span className="checklist-assignee">
+                            <User size={12} />
+                            {item.assignee}
+                          </span>
+                        )}
+                        {item.completed && item.completed_at && (
+                          <span className="checklist-completed-time">
+                            Completed: {format(new Date(item.completed_at), 'MMM d, yyyy HH:mm')}
+                          </span>
+                        )}
+                        {!item.completed && (
+                          <span className="checklist-created-time">
+                            Created: {format(new Date(item.created_at), 'MMM d, yyyy HH:mm')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {canEdit && (
+                      <button 
+                        className="checklist-delete"
+                        onClick={() => deleteChecklistItem(taskId, item.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="checklist-empty">
+                <CheckSquare size={32} />
+                <p>No checklist items yet</p>
+              </div>
+            )}
+          </div>
+        )}
+        
         {activeTab === 'files' && (
           <div className="files-tab">
             <div className="files-header">
@@ -456,12 +620,29 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
                         )}
                       </div>
                       <div className="file-actions">
-                        <button className="file-action-btn">
+                        <button 
+                          className="file-action-btn"
+                          onClick={() => handlePreview(file)}
+                          title="Preview file"
+                        >
                           <Eye size={14} />
                         </button>
-                        <button className="file-action-btn">
+                        <button 
+                          className="file-action-btn"
+                          onClick={() => handleDownload(file)}
+                          title="Download file"
+                        >
                           <Download size={14} />
                         </button>
+                        {canEdit && (
+                          <button 
+                            className="file-action-btn delete"
+                            onClick={() => handleDeleteFile(file)}
+                            title="Delete file"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -505,6 +686,50 @@ function TaskDetailPanel({ taskId, onBack, isFullPage, onEdit, onUploadFile }) {
           </div>
         )}
       </div>
+      
+      {/* File Preview Modal */}
+      {previewFile && (
+        <div className="preview-modal-overlay" onClick={() => setPreviewFile(null)}>
+          <div className="preview-modal" onClick={e => e.stopPropagation()}>
+            <div className="preview-header">
+              <div className="preview-info">
+                <FileText size={20} />
+                <span>{previewFile.filename}</span>
+              </div>
+              <div className="preview-actions">
+                <button 
+                  className="preview-action-btn"
+                  onClick={() => handleDownload(previewFile)}
+                  title="Download"
+                >
+                  <Download size={18} />
+                </button>
+                <button 
+                  className="preview-close-btn"
+                  onClick={() => setPreviewFile(null)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="preview-content">
+              {previewFile.type === 'pdf' ? (
+                <iframe 
+                  src={previewFile.url} 
+                  title={previewFile.filename}
+                  className="preview-iframe"
+                />
+              ) : (
+                <img 
+                  src={previewFile.url} 
+                  alt={previewFile.filename}
+                  className="preview-image"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

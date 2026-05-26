@@ -43,6 +43,7 @@ export const useTaskStore = create((set, get) => ({
   comments: (persistedState?.comments && typeof persistedState.comments === 'object') ? persistedState.comments : initialComments,
   taskLogs: (persistedState?.taskLogs && typeof persistedState.taskLogs === 'object') ? persistedState.taskLogs : initialTaskLogs,
   taskFiles: (persistedState?.taskFiles && typeof persistedState.taskFiles === 'object') ? persistedState.taskFiles : initialTaskFiles,
+  taskChecklists: (persistedState?.taskChecklists && typeof persistedState.taskChecklists === 'object') ? persistedState.taskChecklists : {},
   
   // Data - mutable users and divisions for CRUD operations
   users: (persistedState?.users && Array.isArray(persistedState.users)) ? persistedState.users : users,
@@ -196,27 +197,91 @@ export const useTaskStore = create((set, get) => ({
     return get().tasks.filter(t => t.project_id === projectId);
   },
   
+  // Checklist management
+  addChecklistItem: (taskId, text, assignee) => {
+    const newItem = {
+      id: `check-${Date.now()}`,
+      text,
+      assignee: assignee || '',
+      completed: false,
+      completed_at: null,
+      created_at: new Date().toISOString(),
+    };
+    set(state => {
+      const taskChecklists = state.taskChecklists || {};
+      const taskItems = taskChecklists[taskId] || [];
+      return {
+        taskChecklists: {
+          ...taskChecklists,
+          [taskId]: [...taskItems, newItem]
+        }
+      };
+    });
+    get()._persistState();
+    return newItem;
+  },
+  
+  toggleChecklistItem: (taskId, itemId) => {
+    set(state => {
+      const taskChecklists = state.taskChecklists || {};
+      const taskItems = taskChecklists[taskId] || [];
+      return {
+        taskChecklists: {
+          ...taskChecklists,
+          [taskId]: taskItems.map(item => 
+            item.id === itemId ? { 
+              ...item, 
+              completed: !item.completed,
+              completed_at: !item.completed ? new Date().toISOString() : null
+            } : item
+          )
+        }
+      };
+    });
+    get()._persistState();
+  },
+  
+  deleteChecklistItem: (taskId, itemId) => {
+    set(state => {
+      const taskChecklists = state.taskChecklists || {};
+      const taskItems = taskChecklists[taskId] || [];
+      return {
+        taskChecklists: {
+          ...taskChecklists,
+          [taskId]: taskItems.filter(item => item.id !== itemId)
+        }
+      };
+    });
+    get()._persistState();
+  },
+  
+  getTaskChecklist: (taskId) => {
+    const { taskChecklists } = get();
+    return taskChecklists?.[taskId] || [];
+  },
+  
   // Filter tasks based on role
   getFilteredTasks: () => {
-    const { tasks, currentUser } = get();
+    const { tasks, currentUser, projects, users } = get();
     
+    // Admin and Corporate can see all tasks
     if (currentUser.role === 'admin' || currentUser.role === 'corporate') {
       return tasks;
     }
     
+    // Manager can see all tasks
     if (currentUser.role === 'manager') {
-      return tasks.filter(t => t.division_id === currentUser.division_id);
+      return tasks;
     }
     
+    // SPV can see tasks within their division (by project association)
     if (currentUser.role === 'spv') {
-      return tasks.filter(t => 
-        t.division_id === currentUser.division_id || 
-        t.assignee_id === currentUser.id ||
-        t.created_by === currentUser.id
-      );
+      const divisionProjects = projects.filter(p => p.division_id === currentUser.division_id);
+      const projectIds = divisionProjects.map(p => p.id);
+      return tasks.filter(t => projectIds.includes(t.project_id));
     }
     
-    // Regular user - only assigned tasks
+    // Regular user - only their assigned tasks
     return tasks.filter(t => t.assignee_id === currentUser.id);
   },
   
@@ -350,6 +415,22 @@ export const useTaskStore = create((set, get) => ({
     return newFile;
   },
   
+  deleteFile: (taskId, fileId) => {
+    set(state => {
+      const taskFiles = state.taskFiles[taskId] || [];
+      const fileToDelete = taskFiles.find(f => f.id === fileId);
+      return {
+        taskFiles: {
+          ...state.taskFiles,
+          [taskId]: taskFiles.filter(f => f.id !== fileId)
+        }
+      };
+    });
+    if (taskId && fileId) {
+      get().addLog(taskId, 'file', `Deleted a file`);
+    }
+  },
+  
   // Activity logs
   addLog: (taskId, action, notes) => {
     const { currentUser } = get();
@@ -417,17 +498,17 @@ export const useTaskStore = create((set, get) => ({
   
   canManageUsers: () => {
     const { currentUser } = get();
-    return currentUser.role === 'admin' || currentUser.role === 'corporate';
+    return currentUser.role === 'admin';
   },
   
   canManageDivisions: () => {
     const { currentUser } = get();
-    return currentUser.role === 'admin' || currentUser.role === 'corporate';
+    return currentUser.role === 'admin';
   },
   
   canAccessAdminSettings: () => {
     const { currentUser } = get();
-    return currentUser.role === 'admin' || currentUser.role === 'corporate';
+    return currentUser.role === 'admin';
   },
   
   // Users CRUD
