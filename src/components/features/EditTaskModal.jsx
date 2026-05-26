@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTaskStore } from '../../stores/taskStore';
 import {
   X,
@@ -57,6 +57,24 @@ function EditTaskModal({ isOpen, onClose, task }) {
   
   const [tagInput, setTagInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  // Update form data when task prop changes
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title || '',
+        brief: task.brief || '',
+        assignee_id: task.assignee_id || '',
+        priority: task.priority || 'medium',
+        due_date: task.due_date ? task.due_date.slice(0, 16) : '',
+        revision_deadline: task.revision_deadline ? task.revision_deadline.slice(0, 16) : '',
+        approval_deadline: task.approval_deadline ? task.approval_deadline.slice(0, 16) : '',
+        tags: task.tags || [],
+        division_id: task.division_id || currentUser.division_id,
+        project_id: task.project_id || '',
+      });
+    }
+  }, [task]);
   
   if (!isOpen || !task) return null;
   
