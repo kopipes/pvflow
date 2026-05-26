@@ -48,7 +48,7 @@ function CalendarView() {
     <div className="calendar-view">
       <div className="calendar-header">
         <div className="calendar-title">
-          <Calendar size={24} />
+          <CalendarIcon size={24} />
           <h2>Calendar</h2>
         </div>
         <div className="calendar-nav">
